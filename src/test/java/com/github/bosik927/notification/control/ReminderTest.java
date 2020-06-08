@@ -1,18 +1,15 @@
 package com.github.bosik927.notification.control;
 
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
 import com.github.bosik927.database.boundary.NotificationRepository;
 import com.github.bosik927.database.boundary.ReservationRepository;
 import com.github.bosik927.database.entity.NotificationEntity;
 import com.github.bosik927.database.entity.ReservationEntity;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
 import java.time.LocalDate;

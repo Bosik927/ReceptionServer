@@ -42,7 +42,6 @@ public class ReceptionService {
 
     @Transactional
     public ReservationEntity createReservation(ReservationDTO reservationDTO) {
-
         ReservationEntity reservationEntity = new ReservationEntity();
         reservationEntity.setCustomerId(reservationDTO.getCustomer_id());
         reservationEntity.setReservationDate(reservationDTO.getReservationDate());
