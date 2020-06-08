@@ -6,9 +6,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
 import java.io.Serializable;
 
-//TODO: Builder
 @Entity
 @Table(name = "accounts")
 public class AccountEntity implements Serializable {
@@ -27,35 +27,66 @@ public class AccountEntity implements Serializable {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    public Long getAccountId() {
-        return this.accountId;
+    protected AccountEntity() {
     }
 
-    public void setAccountId(Long accountId) {
+    private AccountEntity(Long accountId, String username, String email, String phoneNumber) {
         this.accountId = accountId;
+        this.username = username;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+    }
+
+    public Long getAccountId() {
+        return this.accountId;
     }
 
     public String getUsername() {
         return this.username;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getEmail() {
         return this.email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getPhoneNumber() {
         return this.phoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public static AccountEntity.Builder builder(){
+        return new AccountEntity.Builder();
+    }
+
+    static public class Builder {
+
+        private Long accountId;
+        private String username;
+        private String email;
+        private String phoneNumber;
+
+
+        public Builder withAccountId(Long accountId) {
+            this.accountId = accountId;
+            return this;
+        }
+
+        public Builder withUsername(String username) {
+            this.username = username;
+            return this;
+        }
+
+        public Builder withEmail(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public Builder withPhoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public AccountEntity build() {
+            return new AccountEntity(accountId, username, email, phoneNumber);
+        }
     }
 }
