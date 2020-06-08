@@ -23,7 +23,9 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ReceptionServiceTest {
@@ -40,13 +42,13 @@ public class ReceptionServiceTest {
     @Test
     public void testAvailableRooms_allOpenRooms() {
         List<RoomEntity> allRooms = new ArrayList<>();
-        RoomEntity openRoom = new RoomEntity();
-        openRoom.setIsLocked(false);
+        RoomEntity openRoom = RoomEntity.builder()
+                .isLocked(false).build();
         allRooms.add(openRoom);
 
-        RoomEntity openRoom2 = new RoomEntity();
-        openRoom2.setIsLocked(false);
-        allRooms.add(openRoom);
+        RoomEntity openRoom2 = RoomEntity.builder()
+                .isLocked(false).build();
+        allRooms.add(openRoom2);
 
         when(roomRepository.findAll()).thenReturn(allRooms);
 
@@ -58,14 +60,14 @@ public class ReceptionServiceTest {
         List<RoomEntity> allRooms = new ArrayList<>();
         List<RoomEntity> openRooms = new ArrayList<>();
 
-        RoomEntity openRoom = new RoomEntity();
-        openRoom.setIsLocked(false);
+
+        RoomEntity openRoom = RoomEntity.builder()
+                .isLocked(false).build();
         allRooms.add(openRoom);
         openRooms.add(openRoom);
 
-        RoomEntity closeRoom = new RoomEntity();
-        ;
-        closeRoom.setIsLocked(true);
+        RoomEntity closeRoom = RoomEntity.builder()
+                .isLocked(true).build();
         allRooms.add(closeRoom);
 
         when(roomRepository.findAll()).thenReturn(allRooms);
@@ -77,13 +79,12 @@ public class ReceptionServiceTest {
     public void testAvailableRooms_allClosedRooms() {
         List<RoomEntity> allRooms = new ArrayList<>();
 
-        RoomEntity closeRoom1 = new RoomEntity();
-        closeRoom1.setIsLocked(true);
+        RoomEntity closeRoom1 = RoomEntity.builder()
+                .isLocked(true).build();
         allRooms.add(closeRoom1);
 
-        RoomEntity closeRoom2 = new RoomEntity();
-        ;
-        closeRoom2.setIsLocked(true);
+        RoomEntity closeRoom2 = RoomEntity.builder()
+                .isLocked(true).build();
         allRooms.add(closeRoom2);
 
         when(roomRepository.findAll()).thenReturn(allRooms);
@@ -99,29 +100,40 @@ public class ReceptionServiceTest {
         List<Long> simulatedRoomsIds = Arrays.asList(1L, 2L);
 
         ReservationDTO simulatedDto = createSimulateDto(simulatedCustomerId, simulatedDate, simulatedRoomsIds);
-        ReservationEntity expectedToSaveReservation = ReservationEntity.builder()
-                .withReservationDate(simulatedDate)
-                .withCustomerId(simulatedCustomerId).build();
 
-        ReservationEntity simulatedSavedReservation = ReservationEntity.builder()
-                .withCustomerId(simulatedCustomerId)
-                .withReservationDate(simulatedDate)
-                .withReservationId(simulatedReservationId).build();
+        ReservationEntity expectedToSaveReservation = new ReservationEntity();
+        expectedToSaveReservation.setReservationDate(simulatedDate);
+        expectedToSaveReservation.setCustomerId(simulatedCustomerId);
+
+        ReservationEntity simulatedSavedReservation = new ReservationEntity();
+        simulatedSavedReservation.setCustomerId(simulatedCustomerId);
+        simulatedSavedReservation.setReservationDate(simulatedDate);
+        simulatedSavedReservation.setReservationId(simulatedReservationId);
 
         ReservationRoomEntity expectedReservationRoom1 =
                 createExpectedReservationRoom(simulatedReservationId, simulatedRoomsIds.get(0));
         ReservationRoomEntity expectedReservationRoom2 =
                 createExpectedReservationRoom(simulatedReservationId, simulatedRoomsIds.get(1));
 
-        RoomEntity simulatedRoom1 =
-                createRoom(simulatedRoomsIds.get(0), "2", 5, false);
-        RoomEntity expectedToSaveRoom1 =
-                createRoom(simulatedRoomsIds.get(0), "2", 5, true);
+        RoomEntity simulatedRoom1 = RoomEntity.builder().withRoomId(simulatedRoomsIds.get(0))
+                .withRoomNumber("2")
+                .withMaxPersons(5)
+                .isLocked(false).build();
 
-        RoomEntity simulatedRoom2 =
-                createRoom(simulatedRoomsIds.get(1), "3", 4, false);
-        RoomEntity expectedToSaveRoom2 =
-                createRoom(simulatedRoomsIds.get(1), "3", 4, true);
+        RoomEntity expectedToSaveRoom1 = RoomEntity.builder().withRoomId(simulatedRoomsIds.get(0))
+                .withRoomNumber("2")
+                .withMaxPersons(5)
+                .isLocked(true).build();
+
+        RoomEntity simulatedRoom2 = RoomEntity.builder().withRoomId(simulatedRoomsIds.get(1))
+                .withRoomNumber("3")
+                .withMaxPersons(4)
+                .isLocked(false).build();
+
+        RoomEntity expectedToSaveRoom2 = RoomEntity.builder().withRoomId(simulatedRoomsIds.get(1))
+                .withRoomNumber("3")
+                .withMaxPersons(4)
+                .isLocked(true).build();
 
         when(reservationRepository.save(expectedToSaveReservation))
                 .thenReturn(simulatedSavedReservation);
@@ -142,7 +154,8 @@ public class ReceptionServiceTest {
         verify(roomRepository, times(2)).save(any());
         verify(roomRepository).save(expectedToSaveRoom1);
         verify(roomRepository).save(expectedToSaveRoom2);
-    }
+}
+
 
     @Test
     public void testDeleteReservation_testRepositories() {
@@ -161,8 +174,16 @@ public class ReceptionServiceTest {
                 createSimulatedReservationRoom(1L, 4L, 400L);
         reservationRooms.add(reservationRoom4);
 
-        RoomEntity simulatedRoom1 = createRoom(1L, "1", 5, true);
-        RoomEntity simulatedRoom2 = createRoom(2L, "2", 10, true);
+        RoomEntity simulatedRoom1 = RoomEntity.builder()
+                .withMaxPersons(5)
+                .withRoomNumber("1")
+                .withRoomId(1L)
+                .isLocked(true).build();
+        RoomEntity simulatedRoom2 = RoomEntity.builder()
+                .withMaxPersons(10)
+                .withRoomNumber("2")
+                .withRoomId(2L)
+                .isLocked(true).build();
 
 
         when(reservationRoomRepository.findAll()).thenReturn(reservationRooms);
@@ -174,8 +195,16 @@ public class ReceptionServiceTest {
         verify(reservationRoomRepository).deleteById(100L);
         verify(reservationRoomRepository).deleteById(200L);
         verify(reservationRepository).deleteById(4L);
-        verify(roomRepository).save(createRoom(1L, "1", 5, false));
-        verify(roomRepository).save(createRoom(2L, "2", 10, false));
+        verify(roomRepository).save(
+                RoomEntity.builder().withMaxPersons(5)
+                        .withRoomId(1L)
+                        .withRoomNumber("1")
+                        .isLocked(false).build());
+        verify(roomRepository).save(
+                RoomEntity.builder().withMaxPersons(10)
+                        .withRoomId(2L)
+                        .withRoomNumber("2")
+                        .isLocked(false).build());
     }
 
     private ReservationDTO createSimulateDto(Long customerId, Date date, List<Long> roomsIds) {
@@ -201,15 +230,4 @@ public class ReceptionServiceTest {
         reservationRoom.setReservationsRoomsId(reservationRoomId);
         return reservationRoom;
     }
-
-    private RoomEntity createRoom(Long roomId, String roomNumber,
-                                  Integer maxPersons, Boolean isLock) {
-        RoomEntity simulateRoom = new RoomEntity();
-        simulateRoom.setRoomId(roomId);
-        simulateRoom.setRoomNumber(roomNumber);
-        simulateRoom.setMaxPersons(maxPersons);
-        simulateRoom.setIsLocked(isLock);
-        return simulateRoom;
-    }
-
 }

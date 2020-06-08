@@ -7,8 +7,7 @@ import com.github.bosik927.database.entity.ReservationDTO;
 import com.github.bosik927.database.entity.ReservationEntity;
 import com.github.bosik927.database.entity.ReservationRoomEntity;
 import com.github.bosik927.database.entity.RoomEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,9 +18,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class ReceptionService {
-
-    //    TODO: Use it
-    static Logger LOGGER = LoggerFactory.getLogger(ReceptionService.class);
 
     private final RoomRepository roomRepository;
     private final ReservationRoomRepository reservationRoomRepository;
@@ -46,9 +42,10 @@ public class ReceptionService {
 
     @Transactional
     public ReservationEntity createReservation(ReservationDTO reservationDTO) {
-        ReservationEntity reservationEntity = ReservationEntity.builder()
-                .withCustomerId(reservationDTO.getCustomer_id())
-                .withReservationDate(reservationDTO.getReservationDate()).build();
+
+        ReservationEntity reservationEntity = new ReservationEntity();
+        reservationEntity.setCustomerId(reservationDTO.getCustomer_id());
+        reservationEntity.setReservationDate(reservationDTO.getReservationDate());
 
         ReservationEntity savedEntity = reservationRepository.save(reservationEntity);
 
@@ -61,11 +58,13 @@ public class ReceptionService {
                     reservationRoomRepository.save(entity);
 
                     roomRepository.findById(roomId)
-                            .map(roomEntity -> RoomEntity.builder()
-                                    .withRoomId(roomEntity.getRoomId())
-                                    .withRoomNumber(roomEntity.getRoomNumber())
-                                    .withMaxPersons(roomEntity.getMaxPersons())
-                                    .isLocked(true).build())
+                            .map(roomEntity ->
+                                    RoomEntity.builder()
+                                            .withMaxPersons(roomEntity.getMaxPersons())
+                                            .withRoomId(roomEntity.getRoomId())
+                                            .withRoomNumber(roomEntity.getRoomNumber())
+                                            .isLocked(true)
+                                            .build())
                             .ifPresent(roomRepository::save);
                 });
 
@@ -73,7 +72,6 @@ public class ReceptionService {
     }
 
     @Transactional
-//    TODO: Refactor - Bosik927
     public void deleteReservation(Long id) {
         reservationRoomRepository.findAll().stream()
                 .filter(toDelete(id))
@@ -82,13 +80,14 @@ public class ReceptionService {
                             reservationRoomRepository.deleteById(
                                     reservationRoom.getReservationsRoomsId());
 
-//                          TODO: Check
-                            roomRepository.findById(reservationRoom.getRoomId()).
-                                    map(roomEntity -> RoomEntity.builder()
-                                            .withRoomId(roomEntity.getRoomId())
-                                            .withRoomNumber(roomEntity.getRoomNumber())
-                                            .withMaxPersons(roomEntity.getMaxPersons())
-                                            .isLocked(false).build())
+                            roomRepository.findById(reservationRoom.getRoomId())
+                                    .map(roomEntity ->
+                                            RoomEntity.builder()
+                                                    .withMaxPersons(roomEntity.getMaxPersons())
+                                                    .withRoomId(roomEntity.getRoomId())
+                                                    .withRoomNumber(roomEntity.getRoomNumber())
+                                                    .isLocked(false)
+                                                    .build())
                                     .ifPresent(roomRepository::save);
                         }
                 );
@@ -103,5 +102,4 @@ public class ReceptionService {
     private Predicate<ReservationRoomEntity> toDelete(long id) {
         return reservationRoom -> reservationRoom.getReservationId() == id;
     }
-
 }
